@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* ------------------------------------------------------------------
+   Kokai design tokens
+   Brand colours are declared once as CSS variables on :root and then
+   exposed to Tailwind through @theme inline, so classes like
+   `bg-forest`, `text-ink` and `border-gold` all resolve to these values.
+------------------------------------------------------------------- */
+:root {
+  /* Core brand palette */
+  --forest: #1e2f27; /* primary dark: nav, footer, headings */
+  --ivory: #faf5ec; /* page background */
+  --sand: #f0e6d6; /* cards and alternate sections */
+  --gold: #c99a3e; /* dividers, accents and small details only */
+  /* Darker gold used ONLY for gold text on light backgrounds so large
+     display text keeps >= 3:1 contrast on ivory (plain gold is ~2.4:1). */
+  --gold-deep: #a27726;
+  --copper: #b5532f; /* the ONE primary button colour */
+  --copper-hover: #9e4626; /* pressed / hover state of the copper button */
+  --ink: #2a2522; /* body text (~14:1 on ivory) */
+  /* Muted body text, still >= 4.5:1 on ivory and sand */
+  --ink-muted: #5c534c;
+
+  /* Status colours */
+  --success: #3f7d58;
+  --warning: #d98e1f;
+  --error: #b3402f;
+
+  /* shadcn semantic tokens mapped onto the brand palette */
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: var(--sand);
+  --card-foreground: var(--ink);
+  --popover: var(--ivory);
+  --popover-foreground: var(--ink);
+  --primary: var(--copper);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--sand);
+  --secondary-foreground: var(--forest);
+  --muted: var(--sand);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--sand);
+  --accent-foreground: var(--forest);
+  --destructive: var(--error);
+  --border: rgb(30 47 39 / 0.12);
+  --input: rgb(30 47 39 / 0.2);
+  --ring: var(--copper);
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  /* Brand colours as Tailwind utilities */
+  --color-forest: var(--forest);
+  --color-ivory: var(--ivory);
+  --color-sand: var(--sand);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-copper: var(--copper);
+  --color-copper-hover: var(--copper-hover);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  /* shadcn semantic colours */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Font families: the variables are injected by next/font in layout.tsx */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), 'Times New Roman', serif;
+
+  /* Radii derived from the base radius */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* Slow, continuous marquee used by the event strip */
+  --animate-marquee: marquee 48s linear infinite;
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      /* The track contains two identical copies, so -50% loops seamlessly */
+      transform: translateX(-50%);
+    }
+  }
+
+  /*
+   * Pure-CSS entrance for above-the-fold content. It runs before JS
+   * hydrates, so the hero (the LCP element) is never stuck invisible.
+   * "both" fill keeps the hidden start state during any stagger delay.
+   */
+  --animate-reveal: reveal 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Offset anchor jumps so the sticky nav never covers section titles */
+    scroll-padding-top: 5rem;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-ink antialiased;
+  }
+
+  /* Consistent, highly visible focus ring for every interactive element */
+  :focus-visible {
+    outline: 2px solid var(--copper);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /*
+   * Progressive enhancement for scroll reveals: Framer server-renders
+   * FadeUp at opacity 0, so keep it visible until MotionProvider sets
+   * data-motion="on" after hydration. !important beats the inline style.
+   */
+  html:not([data-motion='on']) .fade-up {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Honour the OS-level reduced motion preference across the whole site */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
